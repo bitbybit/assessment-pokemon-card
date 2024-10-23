@@ -20,8 +20,9 @@
           </li>
         </ul>
       </div>
-      <button          
-        class=""        
+      <button
+        class=""
+        @click="loadRandomPokemon"
       >
         Load another Pokémon
       </button>
@@ -32,19 +33,42 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
   import pokemonData from '@/stores/pokemon.json';
   export default {
-    data() {
+    data(): {
+      pokemon: typeof pokemonData | null
+      randomPokemonNumber: number
+      lastPokemonNumber: number
+    } {
       return {
-        pokemon: pokemonData,
+        pokemon: null,
+        randomPokemonNumber: 1,
+        lastPokemonNumber: 1025
       };
     },
-    methods: {      
-      
+    methods: {
+      async loadRandomPokemon() {
+        this.pokemon = null
+
+        try {
+          this.setRandomPokemonNumber()
+
+          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${this.randomPokemonNumber}`)
+
+          this.pokemon = (await response.json()) as typeof pokemonData
+        } catch (e) {
+          console.error(e)
+        }
+      },
+      setRandomPokemonNumber() {
+        this.randomPokemonNumber = Math.floor(
+            Math.random() * (this.lastPokemonNumber - 1 + 1)
+        ) + 1
+      }
     },
-    mounted() {
-      
+    async mounted() {
+      await this.loadRandomPokemon()
     },
   };
   </script>
